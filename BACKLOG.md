@@ -10,6 +10,14 @@
 
   Adds clarity, but hurts performance and I don't like the current implementation of `.verbose` in the  `shiny::reactive`.
   
-* Find out what's best practice regarding setting defaults arg values in inner function returned by `cafun_create`
+* Find out what would be best practice regarding setting defaults arg values in inner function returned by `cafun_create`
 
 * Understand **where** the cached information is actually stored and how it can be purged (to allow explicit purges/removals like via `rm`)
+
+# cachefun 0.1.1
+
+* Should `...` that is passed to inner function be moved to the front of formal arguments of `cafun_create`? Would allow for a more natural usage experience and probably also required for compatibility with the tidyverse/piping paradigm 
+
+* Implement features that allow ones function's cache to observe the cache of another functions (i.e. classical shiny observer/reactive scenario including invalidation, etc.)
+
+* Do we need some options for strictness? E.g. return warning or error if cache is still empty but `refesh = FALSE`? Think about this a bit more before going ahead with any implementation
