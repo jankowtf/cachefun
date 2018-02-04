@@ -10,11 +10,19 @@ Whether or not you want to cache to be updated upon every execuction of the func
 
 The main use case I had in mind when developping this package was offering effortless iternal caching for functions that take a long time to run (e.g. loading data, tidying data).
 
+## Installation
+
+``` r
+require("devtools")
+devtools::install_github("rappster/cachefun")
+```
+
 ## Examples
 
 ### Introduction 
 
-```{r}
+``` r
+library(cachefun)
 # Define a regular function that you'd like to make "cache-aware"
 fun <- function() Sys.time()
 
@@ -22,49 +30,66 @@ fun <- function() Sys.time()
 cafun <- cafun_create(fun = fun)
 
 str(cafun)
+#> function (fun = function () 
+#> Sys.time(), refresh = TRUE, reset = FALSE, .verbose = FALSE, ...)
 # Note that default value for arg 'refresh = TRUE' >> by default, the inner
 # function is always execudted (no internal cache used)  which implies that you
 # need to explicitly state whenever you would like to use the internal cache
 
 cafun() # Inner function executed, result is cached
+#> [1] "2018-02-04 18:40:46 CET"
 cafun() # Inner function executed, result is cached
+#> [1] "2018-02-04 18:40:46 CET"
 cafun(refresh = FALSE) # Inner function NOT executed, internal cache returned
+#> [1] "2018-02-04 18:40:46 CET"
 cafun(refresh = FALSE) # Inner function NOT executed, internal cache returned
+#> [1] "2018-02-04 18:40:46 CET"
 cafun() # Inner function executed, result is cached
+#> [1] "2018-02-04 18:40:46 CET"
 cafun(refresh = FALSE) # Inner function NOT executed, internal cache returned
+#> [1] "2018-02-04 18:40:46 CET"
 ```
 
 ### Change the default value of args 
 
-```{r}
+``` r
 cafun <- cafun_create(fun = fun, .refresh = FALSE)
+#> Error in cafun_create(fun = fun, .refresh = FALSE): Objekt 'fun' nicht gefunden
 
 str(cafun)
+#> Error in str(cafun): Objekt 'cafun' nicht gefunden
 # Note that default value for arg 'refresh = TRUE' >> you reversed the
 # pre-configured default setting
 
 cafun() # Inner is INITIALLY function executed, result is cached
+#> Error in cafun(): konnte Funktion "cafun" nicht finden
 cafun() # Inner function NOT executed, internal cache returned
+#> Error in cafun(): konnte Funktion "cafun" nicht finden
 cafun(refresh = TRUE) # Explicit refresh request:
+#> Error in cafun(refresh = TRUE): konnte Funktion "cafun" nicht finden
                       # Inner function executed, result is cached
 cafun() # Inner function NOT executed, internal cache returned
+#> Error in cafun(): konnte Funktion "cafun" nicht finden
 ```
 
 ### Inner function with argumeents 
 
-```{r}
+``` r
 fun <- function(x) Sys.time() + x
 
 cafun <- cafun_create(fun = fun)
 
 cafun(x = 3600) # Inner function executed, result is cached
+#> [1] "2018-02-04 19:42:22 CET"
 cafun(x = 3600 * 5, refresh = FALSE) # Inner function NOT executed, internal cache returned
+#> [1] "2018-02-04 19:42:22 CET"
 cafun(x = 3600 * 5) # Inner function executed, result is cached
+#> [1] "2018-02-04 23:42:22 CET"
 ```
 
 ### Reset internal cache 
 
-```{r}
+``` r
 fun <- function(x) rnorm(x)
 
 cafun <- cafun_create(fun = fun)
@@ -74,4 +99,6 @@ res <- cafun(x = 1000)
 # Resetting the internal cache in verbose mode (messages for prior and new
 # object size in cache)
 cafun_reset_cache(cafun = cafun, .verbose = TRUE)
+#> 8040
+#> 0
 ```
