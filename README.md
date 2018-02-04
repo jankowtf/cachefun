@@ -4,11 +4,11 @@ The goal of `cachefun` is to make caching fun ;-)
 
 It let's you define "cache-aware functions"" (`cafun`s) or, put differently, functions that have an internal/built-in cache.
 
-Whether or not you want to cache to be updated upon every execuction of the function or not is completely up to you (see `refresh` argument of `cafun_create`):
+Whether or not you want the cache to be updated upon every execuction of the function or not is completely up to you (see `refresh` argument of `cafun_create`):
 * When setting `refresh = TRUE` the *cafun* would behave just as any regular R function 
-* When setting `refresh = FALSE` you would explicitly request the cached result of the previous execution.
+* When setting `refresh = FALSE` you would explicitly request the cached result of the *cafun's* previous execution.
 
-The main use case I had in mind when developping this package was offering effortless iternal caching for functions that take a long time to run (e.g. loading data, tidying data).
+The main use case I had in mind when developping this package was offering **effortless** iternal caching for functions that take a long time to run (e.g. loading data, tidying data, etc.). I also wanted to leverage as much of reactive functionality of ``shiny`` as possible. 
 
 ## Installation
 
@@ -37,39 +37,44 @@ str(cafun)
 # need to explicitly state whenever you would like to use the internal cache
 
 cafun() # Inner function executed, result is cached
-#> [1] "2018-02-04 18:40:46 CET"
+#> [1] "2018-02-04 20:30:59 CET"
+Sys.sleep(1)
 cafun() # Inner function executed, result is cached
-#> [1] "2018-02-04 18:40:46 CET"
+#> [1] "2018-02-04 20:31:00 CET"
+Sys.sleep(1)
 cafun(refresh = FALSE) # Inner function NOT executed, internal cache returned
-#> [1] "2018-02-04 18:40:46 CET"
+#> [1] "2018-02-04 20:31:00 CET"
 cafun(refresh = FALSE) # Inner function NOT executed, internal cache returned
-#> [1] "2018-02-04 18:40:46 CET"
+#> [1] "2018-02-04 20:31:00 CET"
+Sys.sleep(1)
 cafun() # Inner function executed, result is cached
-#> [1] "2018-02-04 18:40:46 CET"
+#> [1] "2018-02-04 20:31:02 CET"
 cafun(refresh = FALSE) # Inner function NOT executed, internal cache returned
-#> [1] "2018-02-04 18:40:46 CET"
+#> [1] "2018-02-04 20:31:02 CET"
 ```
 
 ### Change the default value of args 
 
 ``` r
+library(cachefun)
+fun <- function() Sys.time()
 cafun <- cafun_create(fun = fun, .refresh = FALSE)
-#> Error in cafun_create(fun = fun, .refresh = FALSE): Objekt 'fun' nicht gefunden
 
 str(cafun)
-#> Error in str(cafun): Objekt 'cafun' nicht gefunden
+#> function (fun = function () 
+#> Sys.time(), refresh = FALSE, reset = FALSE, .verbose = FALSE, ...)
 # Note that default value for arg 'refresh = TRUE' >> you reversed the
 # pre-configured default setting
 
 cafun() # Inner is INITIALLY function executed, result is cached
-#> Error in cafun(): konnte Funktion "cafun" nicht finden
+#> [1] "2018-02-04 20:31:54 CET"
 cafun() # Inner function NOT executed, internal cache returned
-#> Error in cafun(): konnte Funktion "cafun" nicht finden
+#> [1] "2018-02-04 20:31:54 CET"
 cafun(refresh = TRUE) # Explicit refresh request:
-#> Error in cafun(refresh = TRUE): konnte Funktion "cafun" nicht finden
+#> [1] "2018-02-04 20:31:54 CET"
                       # Inner function executed, result is cached
 cafun() # Inner function NOT executed, internal cache returned
-#> Error in cafun(): konnte Funktion "cafun" nicht finden
+#> [1] "2018-02-04 20:31:54 CET"
 ```
 
 ### Inner function with argumeents 

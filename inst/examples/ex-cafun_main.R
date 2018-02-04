@@ -1,6 +1,7 @@
 
 # Introduction ------------------------------------------------------------
 
+library(cachefun)
 # Define a regular function that you'd like to make "cache-aware"
 fun <- function() Sys.time()
 
@@ -13,14 +14,19 @@ str(cafun)
 # need to explicitly state whenever you would like to use the internal cache
 
 cafun() # Inner function executed, result is cached
+Sys.sleep(1)
 cafun() # Inner function executed, result is cached
+Sys.sleep(1)
 cafun(refresh = FALSE) # Inner function NOT executed, internal cache returned
 cafun(refresh = FALSE) # Inner function NOT executed, internal cache returned
+Sys.sleep(1)
 cafun() # Inner function executed, result is cached
 cafun(refresh = FALSE) # Inner function NOT executed, internal cache returned
 
 # Change the default value of args ----------------------------------------
 
+library(cachefun)
+fun <- function() Sys.time()
 cafun <- cafun_create(fun = fun, .refresh = FALSE)
 
 str(cafun)
