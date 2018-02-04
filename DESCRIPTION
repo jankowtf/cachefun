@@ -1,7 +1,7 @@
 Package: cachefun
 Type: Package
 Title: Functions with built-in cache
-Version: 0.1.0
+Version: 0.1.1
 Author: Janko Thyson
 Maintainer: Janko Thyson <janko.thyson@rappster.io>
 Description: Allows to define functions that are able to cache their return value
@@ -11,4 +11,5 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.0.1
 Suggests: 
-    covr
+    covr,
+    testthat

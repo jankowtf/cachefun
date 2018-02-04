@@ -1,0 +1,46 @@
+# Define a regular function that you'd like to make "cache-aware"
+fun <- function() Sys.time()
+
+# Turn this function into a cache-aware function
+cafun <- cafun_create(fun = fun)
+
+str(cafun)
+# Note that default value for arg 'refresh' >> you need to explicitly refresh
+
+cafun() # Initial execution of your inner/actual function 'fun'
+cafun() # Subsequent execution: internally cached result of 'fun' is returned
+cafun(refresh = TRUE) # Explicit refresh request: 'fun' is re-executed and
+                      # new result is cached internally
+cafun() # Subsequent execution: internally cached result of 'fun' is returned
+
+# -----
+
+# Change the default value of args
+cafun <- cafun_create(fun = fun, .refresh = TRUE)
+
+str(cafun)
+# Note that default value for arg 'refresh' is not 'FALSE' >> you don't need to
+# explicitly refresh the internal cache. However, now you must explictly state
+# when you **don't** want to refresh the cache - or to put in other words - when
+# you want to make use of the internal cache
+
+cafun() # Inner function executed
+cafun() # Inner function re-executed
+cafun(refresh = FALSE) # Internal cache value returned
+cafun(refresh = FALSE) # Internal cache value returned
+cafun() # Inner function re-executed
+
+# -----
+
+# Inner function with argumeents
+fun <- function(x) Sys.time() + x
+
+cafun <- cafun_create(fun = fun)
+
+cafun(x = 3600) # Inner function executed
+cafun(x = 3600 * 5) # Internal cache value returned
+cafun(x = 3600 * 5, refresh = TRUE) # Inner function re-executed
+
+# -----
+
+# Reset internal cache
