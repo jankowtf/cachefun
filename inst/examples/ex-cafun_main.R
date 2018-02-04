@@ -1,3 +1,6 @@
+
+# Introduction ------------------------------------------------------------
+
 # Define a regular function that you'd like to make "cache-aware"
 fun <- function() Sys.time()
 
@@ -5,42 +8,49 @@ fun <- function() Sys.time()
 cafun <- cafun_create(fun = fun)
 
 str(cafun)
-# Note that default value for arg 'refresh' >> you need to explicitly refresh
+# Note that default value for arg 'refresh = TRUE' >> by default, the inner
+# function is always execudted (no internal cache used)  which implies that you
+# need to explicitly state whenever you would like to use the internal cache
 
-cafun() # Initial execution of your inner/actual function 'fun'
-cafun() # Subsequent execution: internally cached result of 'fun' is returned
-cafun(refresh = TRUE) # Explicit refresh request: 'fun' is re-executed and
-                      # new result is cached internally
-cafun() # Subsequent execution: internally cached result of 'fun' is returned
+cafun() # Inner function executed, result is cached
+cafun() # Inner function executed, result is cached
+cafun(refresh = FALSE) # Inner function NOT executed, internal cache returned
+cafun(refresh = FALSE) # Inner function NOT executed, internal cache returned
+cafun() # Inner function executed, result is cached
+cafun(refresh = FALSE) # Inner function NOT executed, internal cache returned
 
-# -----
+# Change the default value of args ----------------------------------------
 
-# Change the default value of args
-cafun <- cafun_create(fun = fun, .refresh = TRUE)
+cafun <- cafun_create(fun = fun, .refresh = FALSE)
 
 str(cafun)
-# Note that default value for arg 'refresh' is not 'FALSE' >> you don't need to
-# explicitly refresh the internal cache. However, now you must explictly state
-# when you **don't** want to refresh the cache - or to put in other words - when
-# you want to make use of the internal cache
+# Note that default value for arg 'refresh = TRUE' >> you reversed the
+# pre-configured default setting
 
-cafun() # Inner function executed
-cafun() # Inner function re-executed
-cafun(refresh = FALSE) # Internal cache value returned
-cafun(refresh = FALSE) # Internal cache value returned
-cafun() # Inner function re-executed
+cafun() # Inner is INITIALLY function executed, result is cached
+cafun() # Inner function NOT executed, internal cache returned
+cafun(refresh = TRUE) # Explicit refresh request:
+                      # Inner function executed, result is cached
+cafun() # Inner function NOT executed, internal cache returned
 
-# -----
+# Inner function with argumeents ------------------------------------------
 
-# Inner function with argumeents
 fun <- function(x) Sys.time() + x
 
 cafun <- cafun_create(fun = fun)
 
-cafun(x = 3600) # Inner function executed
-cafun(x = 3600 * 5) # Internal cache value returned
-cafun(x = 3600 * 5, refresh = TRUE) # Inner function re-executed
+cafun(x = 3600) # Inner function executed, result is cached
+cafun(x = 3600 * 5, refresh = FALSE) # Inner function NOT executed, internal cache returned
+cafun(x = 3600 * 5) # Inner function executed, result is cached
 
-# -----
+# Reset internal cache ----------------------------------------------------
 
-# Reset internal cache
+fun <- function(x) rnorm(x)
+
+cafun <- cafun_create(fun = fun)
+
+res <- cafun(x = 1000)
+
+# Resetting the internal cache in verbose mode (messages for prior and new
+# object size in cache)
+cafun_reset_cache(cafun = cafun, .verbose = TRUE)

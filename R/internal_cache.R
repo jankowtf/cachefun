@@ -8,7 +8,7 @@
 #' @export
 cafun_create <- function(
   fun = NULL,
-  .refresh = FALSE,
+  .refresh = TRUE,
   .verbose = FALSE
 
 ) {
