@@ -102,3 +102,33 @@ cafun_reset_cache(cafun = cafun, .verbose = TRUE)
 #> 8040
 #> 0
 ```
+
+### Observed dependencies
+
+``` r
+fun_1 <- function(x) x
+cafun_1 <- cafun_create(fun = fun_1)
+
+# Define cafun_2 that depends on cafun_1
+fun_2 <- function(x, observes) {
+  observes$cafun_1(refresh = FALSE) + x
+}
+# Note that we make the dependency explicit  by relying on the internal cache
+# of cafun_1
+cafun_2 <- cafun_create(fun = fun_2,
+  observes = shiny::reactiveValues(cafun_1 = cafun_1))
+# Dependencies to observe are supplied via 'observes' argument which is a
+# shiny reactive values list
+
+cafun_1(x = 10)
+#> [1] 10
+cafun_2(x = 50)
+#> [1] 60
+
+cafun_1(x = 100)
+#> [1] 100
+cafun_2(x = 50)
+#> [1] 150
+cafun_2(x = 200)
+#> [1] 300
+```

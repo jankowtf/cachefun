@@ -19,3 +19,6 @@
     * Added description and intro text
     * Added example from `inst/examples/ex-cafun_main.R` 
 
+# cachefun 0.1.3
+
+* Implemented observable dependencies (see arg `observes` in `cafun_create`)
