@@ -66,4 +66,28 @@ res <- cafun(x = 1000)
 # Resetting the internal cache in verbose mode (messages for prior and new
 # object size in cache)
 cafun_reset_cache(cafun = cafun, .verbose = TRUE)
+
+# Observed dependencies ---------------------------------------------------
+
+# Define cafun_1 that will next be observed by cafun_2
+fun_1 <- function(x) x
+cafun_1 <- cafun_create(fun = fun_1)
+
+# Define cafun_2 that depends on cafun_1
+fun_2 <- function(x, observes) {
+  observes$cafun_1(refresh = FALSE) + x
+}
+# Note that we make the dependency explicit  by relying on the internal cache
+# of cafun_1
+cafun_2 <- cafun_create(fun = fun_2,
+  observes = shiny::reactiveValues(cafun_1 = cafun_1))
+# Dependencies to observe are supplied via 'observes' argument which is a
+# shiny reactive values list
+
+cafun_1(x = 10)
+cafun_2(x = 50)
+
+cafun_1(x = 100)
+cafun_2(x = 50)
+cafun_2(x = 200)
 }

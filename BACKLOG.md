@@ -21,3 +21,7 @@
 * Implement features that allow ones function's cache to observe the cache of another functions (i.e. classical shiny observer/reactive scenario including invalidation, etc.)
 
 * Do we need some options for strictness? E.g. return warning or error if cache is still empty but `refesh = FALSE`? Think about this a bit more before going ahead with any implementation
+
+# cachefun 0.1.2
+
+* There are probably better ways to implement observable dependencies (see arg `observes` in `cafun_create`). Check shiny internals and/or ask for help from community
