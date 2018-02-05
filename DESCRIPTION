@@ -1,7 +1,7 @@
 Package: cachefun
 Type: Package
 Title: Functions with built-in cache
-Version: 0.1.3
+Version: 0.1.4
 Author: Janko Thyson
 Maintainer: Janko Thyson <janko.thyson@rappster.io>
 Description: Allows to define functions that are able to cache their return value
@@ -13,3 +13,5 @@ RoxygenNote: 6.0.1
 Suggests: 
     covr,
     testthat
+Imports: 
+    shiny
