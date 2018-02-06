@@ -1,7 +1,7 @@
 Package: cachefun
 Type: Package
 Title: Functions with built-in cache
-Version: 0.1.4
+Version: 0.1.5
 Author: Janko Thyson
 Maintainer: Janko Thyson <janko.thyson@rappster.io>
 Description: Allows to define functions that are able to cache their return value

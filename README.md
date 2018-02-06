@@ -2,15 +2,15 @@
 
 The goal of `cachefun` is to make caching fun ;-)
 
-It let's you define "cache-aware functions" (`cafun`s or `caf`s) which means that the functions have an internal/built-in cache.
+It let's you define "cache-aware functions" (`cafun`s or `caf`s): functions that have an internal/built-in cache.
 
 Whether or not you want this cache to be updated upon every execuction of the function or not is completely up to you (see `.refresh_default` argument of `caf_create`):
 * When setting `.refresh_default = TRUE` the *caf* would behave just as any regular R function unless you tell it otherwise by setting `.refresh = FALSE` when calling your *caf* 
 * When setting `.refresh_default = FALSE`, then it's the other way around: you would always get the value of the internal cache unless you explicitly request the cache to be updated by setting `.refresh = TRUE` when calling your *caf*.
 
-The main use case I had in mind when developping this package was offering effortless ("built-in") **and** flexible (sometimes I don't want the cache result, sometimes I do") iternal caching for functions that take a long time to run (e.g. loading data, tidying data, etc.). 
+You are also able to define reactive dependencies that directly leverage the reactivity functionality of `{shiny}`. Thus, internal cache values are automatically invalidated if the cache value of one of your function's dependencies changes.
 
-As I'm fascinated by the concept of reactiveness, I also want/plan to leverage as much of `{shiny}`'s reactive functionality of as possible (see my efforts with observed dependencies below). 
+The main use case I had in mind when developping this package was offering effortless ("built-in") **and** flexible (sometimes I don't want the cache result, sometimes I do") iternal caching for functions that take a long time to run (e.g. loading data, tidying data, etc.). 
 
 ## Installation
 
@@ -119,36 +119,46 @@ caf_reset(cafun = cafun, .verbose = TRUE)
 #> 0
 ```
 
-### Observed dependencies
+### Reactive dependencies
 
 ``` r
 library(cachefun)
 
-# Define cafun_1 that will next be observed by cafun_2
+# Define 'caf_1' that 'caf_2' will depend on
 fun_1 <- function(x) x
-cafun_1 <- caf_create(fun = fun_1)
+caf_1 <- caf_create(fun = fun_1)
 
-# Define cafun_2 that depends on cafun_1
+# Define 'caf_2' that depends on 'caf_1'
 fun_2 <- function(x, observes) {
-  observes$cafun_1(.refresh = FALSE) + x
+  observes$caf_1(.refresh = FALSE) + x
 }
-# Note that we make the dependency explicit  by relying on the internal cache
-# of cafun_1
-cafun_2 <- caf_create(fun = fun_2,
-  observes = shiny::reactiveValues(cafun_1 = cafun_1))
-# Dependencies to observe are supplied via 'observes' argument which is a
-# shiny reactive values list
+caf_2 <- caf_create(fun = fun_2, observes = list(caf_1 = caf_1))
+# Note that we state the dependency by relying on the internal cache of 'caf_1'
+# ('.refresh = FALSE'). Behind the scenes, 'caf_create' takes care of turning a
+# dependency listed in the 'observes' ilist nto an **reactive** one (leveraging
+# shiny's capabilities). This means that 'caf_2' will be re-evaluated whenever
+# the cached return value of dependency 'caf_1' is updated. In shiny terms, the
+# cache of 'caf_2' is autmatically invalidated when it needs to be
 
-cafun_1(x = 10)
+caf_1(x = 10)
 #> [1] 10
-cafun_2(x = 50)
+caf_2(x = 50)
 #> [1] 60
 
-cafun_1(x = 100)
+caf_1(x = 100)
 #> [1] 100
-cafun_2(x = 50)
+caf_2(x = 50, .refresh = FALSE)
 #> [1] 150
-cafun_2(x = 200)
+# Note that even though we explicitly requested that 'caf_2' should return the
+# interanally cached value of the previous execution (60), the inner unction was
+# instead evaluated. This is because the cached value of 'caf_1' has changed
+# which automatically invalidates all reactive components that depend on it.
+# This way you can be sure that even though you might like to use cached values,
+# you still never run the risk of being out-of-sync regarding your function's
+# dependencies
+
+caf_2(x = 200)
 #> [1] 300
 ```
+
 
