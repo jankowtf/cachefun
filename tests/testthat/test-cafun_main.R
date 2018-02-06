@@ -47,10 +47,6 @@ test_that("20180204-2: caf: verbose", {
   )
 })
 
-# Reactivity --------------------------------------------------------------
-
-context("Cache-aware functions: reactivity")
-
 test_that("20180204-3: caf: reset cache", {
   # Inner function with argumeents
   fun <- function(x) rnorm(x)
@@ -61,6 +57,10 @@ test_that("20180204-3: caf: reset cache", {
 
   caf_reset(caf = caf, .verbose = TRUE)
 })
+
+# Reactivity --------------------------------------------------------------
+
+context("Cache-aware functions: reactivity")
 
 test_that("20180204-4: reactivity: basic", {
   fun_1 <- function(x) x
@@ -74,6 +74,30 @@ test_that("20180204-4: reactivity: basic", {
   expect_identical(caf_1(x = 10), 10)
   expect_identical(caf_2(x = 50), 60)
   expect_identical(caf_1(x = 100), 100)
+  expect_identical(caf_2(x = 200), 300)
+})
+
+test_that("20180206-1: reactivity: invalidation", {
+
+  fun_1 <- function(x) x
+  caf_1 <- caf_create(fun = fun_1)
+
+  # fun_2 <- function(x, observes) {
+  #   reactive(observes$caf_1(.refresh = FALSE) + x)
+  # }
+  fun_2 <- function(x, observes) {
+    observes$caf_1(.refresh = FALSE) + x
+  }
+
+  caf_2 <- caf_create(fun = fun_2, observes = list(caf_1 = caf_1))
+
+  caf_1(x = 10)
+  expect_identical(caf_2(x = 50, .refresh = FALSE), 60)
+  expect_identical(caf_2(x = 50), 60)
+
+  caf_1(x = 100)
+  expect_identical(caf_2(x = 50, .refresh = FALSE), 150)
+  expect_identical(caf_2(x = 200, .refresh = FALSE), 150)
   expect_identical(caf_2(x = 200), 300)
 })
 

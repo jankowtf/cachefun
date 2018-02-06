@@ -150,12 +150,12 @@ caf_1(x = 100)
 caf_2(x = 50, .refresh = FALSE)
 #> [1] 150
 # Note that even though we explicitly requested that 'caf_2' should return the
-# interanally cached value of the previous execution (60), the inner unction was
-# instead evaluated. This is because the cached value of 'caf_1' has changed
-# which automatically invalidates all reactive components that depend on it.
-# This way you can be sure that even though you might like to use cached values,
-# you still never run the risk of being out-of-sync regarding your function's
-# dependencies
+# internally cached value of the previous execution (60), the inner function was
+# instead re-evaluated. This is because the cached value of 'caf_1' has changed
+# which automatically invalidates all reactive components that depend on it
+# (i.e. the cache value of 'caf_2'). This way you can be sure that even though
+# you might like to use cached values, you still never run the risk of being
+# out-of-sync regarding your function's dependencies
 
 caf_2(x = 200)
 #> [1] 300
