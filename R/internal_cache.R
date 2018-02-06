@@ -51,7 +51,13 @@ caf_create <- function(
       fun_res <- if (!"observes" %in% names(fun_formals)) {
         fun(...)
       } else {
-        fun(..., observes = observes)
+        # fun(..., observes = observes)
+        reactive(fun(..., observes = observes))
+        # TODO-20180206-1: Don't really know if implicit or explicit is better
+        # regarding the use of 'reactive'. Pro for explicitly using it already
+        # in the dev of the inner function is clarity Pro for implicitly taking
+        # care of wrapping the inner function is hiding "reactive overhead"
+        # stuff from the user when defining the inner function
       }
       # fun_res <- rlang::eval_tidy(fun())
       # Keep as ref, probably will need to be done this way at some point ;-)
@@ -59,7 +65,11 @@ caf_create <- function(
     }
 
     # Relay cache-handling to shiny -----
-    dat_reactive()
+    if (!shiny::is.reactive(dat_reactive())) {
+      dat_reactive()
+    } else {
+      dat_reactive()()
+    }
   }
 
   # Transfer default values -----

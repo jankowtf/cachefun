@@ -19,93 +19,102 @@ library(cachefun)
 fun <- function() Sys.time()
 
 # Turn this function into a cache-aware function
-cafun <- caf_create(fun = fun)
+caf <- caf_create(fun = fun)
 
-str(cafun)
+str(caf)
 # Note that default value for arg '.refresh = TRUE' >> by default, the inner
 # function is always executed (internal cache is always updated). This implies
 # that the function behaves like any regular R function unless you explicitly
 # tell it to return the internal cache in a particular call by setting '.refresh
 # = FALSE'.
 
-cafun() # Inner function executed, result is cached
+caf() # Inner function executed, result is cached
 Sys.sleep(1)
-cafun() # Inner function executed, result is cached
+caf() # Inner function executed, result is cached
 Sys.sleep(1)
-cafun(.refresh = FALSE) # Inner function NOT executed, internal cache returned
+caf(.refresh = FALSE) # Inner function NOT executed, internal cache returned
 Sys.sleep(1)
-cafun(.refresh = FALSE) # Inner function NOT executed, internal cache returned
+caf(.refresh = FALSE) # Inner function NOT executed, internal cache returned
 Sys.sleep(1)
-cafun() # Inner function executed, result is cached
+caf() # Inner function executed, result is cached
 Sys.sleep(1)
-cafun(.refresh = FALSE) # Inner function NOT executed, internal cache returned
+caf(.refresh = FALSE) # Inner function NOT executed, internal cache returned
 
 # Change the default value of args ----------------------------------------
 
 library(cachefun)
 fun <- function() Sys.time()
-cafun <- caf_create(fun = fun, .refresh_default = FALSE)
+caf <- caf_create(fun = fun, .refresh_default = FALSE)
 
-str(cafun)
+str(caf)
 # Note that default value for arg '.refresh = FALSE' >> you reversed the
 # pre-configured default settings. This implies that the function will always
 # return the internal cache value unless you explicitly tell it not to by
 # setting `.refresh = TRUE` in a particular call
 
-cafun() # Inner function is INITIALLY executed (as cache is still empty),
+caf() # Inner function is INITIALLY executed (as cache is still empty),
         # result is cached
-cafun() # Inner function NOT executed, internal cache returned
-cafun(.refresh = TRUE) # Explicit refresh request:
+caf() # Inner function NOT executed, internal cache returned
+caf(.refresh = TRUE) # Explicit refresh request:
                       # Inner function executed, result is cached
-cafun() # Inner function NOT executed, internal cache returned
+caf() # Inner function NOT executed, internal cache returned
 
 # Inner function with arguments ------------------------------------------
 
 library(cachefun)
 fun <- function(x) Sys.time() + x
 
-cafun <- caf_create(fun = fun)
+caf <- caf_create(fun = fun)
 
-cafun(x = 3600) # Inner function executed, result is cached
-cafun(x = 3600 * 5, .refresh = FALSE) # Inner function NOT executed, internal cache returned
-cafun(x = 3600 * 5) # Inner function executed, result is cached
+caf(x = 3600) # Inner function executed, result is cached
+caf(x = 3600 * 5, .refresh = FALSE) # Inner function NOT executed, internal cache returned
+caf(x = 3600 * 5) # Inner function executed, result is cached
 
 # Reset internal cache ----------------------------------------------------
 
 library(cachefun)
 fun <- function(x) rnorm(x)
 
-cafun <- caf_create(fun = fun)
+caf <- caf_create(fun = fun)
 
-res <- cafun(x = 1000)
+res <- caf(x = 1000)
 
 # Resetting the internal cache in verbose mode (messages for prior and new
 # object size in cache)
-caf_reset(cafun = cafun, .verbose = TRUE)
+caf_reset(caf = caf, .verbose = TRUE)
 
-# Observed dependencies ---------------------------------------------------
+# Reactive dependencies ---------------------------------------------------
 
 library(cachefun)
 
-# Define cafun_1 that will next be observed by cafun_2
+# Define 'caf_1' that 'caf_2' will depend on
 fun_1 <- function(x) x
-cafun_1 <- caf_create(fun = fun_1)
+caf_1 <- caf_create(fun = fun_1)
 
-# Define cafun_2 that depends on cafun_1
+# Define 'caf_2' that depends on 'caf_1'
 fun_2 <- function(x, observes) {
-  observes$cafun_1(.refresh = FALSE) + x
+  observes$caf_1(.refresh = FALSE) + x
 }
-# Note that we make the dependency explicit  by relying on the internal cache
-# of cafun_1
-cafun_2 <- caf_create(fun = fun_2,
-  observes = shiny::reactiveValues(cafun_1 = cafun_1))
-# Dependencies to observe are supplied via 'observes' argument which is a
-# shiny reactive values list
+caf_2 <- caf_create(fun = fun_2, observes = list(caf_1 = caf_1))
+# Note that we state the dependency by relying on the internal cache of 'caf_1'
+# ('.refresh = FALSE'). Behind the scenes, 'caf_create' takes care of turning a
+# dependency listed in the 'observes' ilist nto an **reactive** one (leveraging
+# shiny's capabilities). This means that 'caf_2' will be re-evaluated whenever
+# the cached return value of dependency 'caf_1' is updated. In shiny terms, the
+# cache of 'caf_2' is autmatically invalidated when it needs to be
 
-cafun_1(x = 10)
-cafun_2(x = 50)
+caf_1(x = 10)
+caf_2(x = 50)
 
-cafun_1(x = 100)
-cafun_2(x = 50)
-cafun_2(x = 200)
+caf_1(x = 100)
+caf_2(x = 50, .refresh = FALSE)
+# Note that even though we explicitly requested that 'caf_2' should return the
+# interanally cached value of the previous execution (60), the inner unction was
+# instead evaluated. This is because the cached value of 'caf_1' has changed
+# which automatically invalidates all reactive components that depend on it.
+# This way you can be sure that even though you might like to use cached values,
+# you still never run the risk of being out-of-sync regarding your function's
+# dependencies
+
+caf_2(x = 200)
 }

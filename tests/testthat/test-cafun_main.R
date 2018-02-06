@@ -1,5 +1,8 @@
 library(testthat)
-context("Test cache-aware functions")
+
+# Basics ------------------------------------------------------------------
+
+context("Cache-aware functions: Basics")
 
 test_that("20180204-1: cafun: initial", {
   fun <- function(x) sprintf("hello %s!", x)
@@ -44,7 +47,9 @@ test_that("20180204-2: cafun: verbose", {
   )
 })
 
+# Reactivity --------------------------------------------------------------
 
+context("Cache-aware functions: reactivity")
 
 test_that("20180204-3: cafun: reset cache", {
   # Inner function with argumeents
@@ -57,18 +62,39 @@ test_that("20180204-3: cafun: reset cache", {
   caf_reset(cafun = cafun, .verbose = TRUE)
 })
 
-test_that("20180204-4: cafun: observed deps", {
+test_that("20180204-4: reactivity: basic", {
   fun_1 <- function(x) x
   cafun_1 <- caf_create(fun = fun_1)
 
   fun_2 <- function(x, observes) {
     observes$cafun_1(.refresh = FALSE) + x
   }
-  cafun_2 <- caf_create(fun = fun_2,
-    observes = shiny::reactiveValues(cafun_1 = cafun_1))
+  cafun_2 <- caf_create(fun = fun_2, observes = list(cafun_1 = cafun_1))
 
   expect_identical(cafun_1(x = 10), 10)
   expect_identical(cafun_2(x = 50), 60)
   expect_identical(cafun_1(x = 100), 100)
   expect_identical(cafun_2(x = 200), 300)
+})
+
+test_that("20180206-1: reactivity: invalidation", {
+  fun_1 <- function(x) x
+  caf_1 <- caf_create(fun = fun_1)
+
+  # fun_2 <- function(x, observes) {
+  #   reactive(observes$caf_1(.refresh = FALSE) + x)
+  # }
+  fun_2 <- function(x, observes) {
+    observes$caf_1(.refresh = FALSE) + x
+  }
+  caf_2 <- caf_create(fun = fun_2, observes = list(caf_1 = caf_1))
+
+  caf_1(x = 10)
+  expect_identical(caf_2(x = 50, .refresh = FALSE), 60)
+  expect_identical(caf_2(x = 50), 60)
+
+  caf_1(x = 100)
+  expect_identical(caf_2(x = 50, .refresh = FALSE), 150)
+  expect_identical(caf_2(x = 200, .refresh = FALSE), 150)
+  expect_identical(caf_2(x = 200), 300)
 })

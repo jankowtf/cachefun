@@ -37,3 +37,14 @@
     * Moved old code for `caf_create` to `R/_scripts/keep_as_reference`.
     * Started to assign explicit IDs to backlog items for easier referencing (see `BACKLOG.md`). The challenge here will be to keep track of the auto-increment state ;-) Think about this a bit more - especially regarding how to leverage/integrate with GitHub issue and labeling system.
     * Updated `README.md`
+
+# cachefun 0.1.5
+
+* Major changes:
+    * Improved leveraging of `{shiny}`reactivity (made sure that cache results are automatically invalidated if cache value of dependency changes)
+    * Changed argument value in `caf_create`: `observes` is a simple list now
+    * Reactive context automatically added behind the scene in `caf_create` if `observes` is supplied (`fun` is wrapped by `reactive`)
+    * Added test: 20180206-1 (reactive invalidation) 
+* Minor changes:
+    * Updated example: inst/examples/ex-cafun_main.R
+    * Updated README
