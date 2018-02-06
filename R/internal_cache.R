@@ -4,7 +4,7 @@
 #' @importFrom shiny reactiveValues
 #' @importFrom shiny reactive
 #' @importFrom shiny isolate
-#' @example inst/examples/ex-cafun_main.R
+#' @example inst/examples/ex-caf_main.R
 #' @export
 caf_create <- function(
   fun = NULL,
@@ -19,7 +19,7 @@ caf_create <- function(
     reactv$data
   })
 
-  cafun <- function(
+  caf <- function(
     fun,
     .refresh = TRUE,
     .reset = FALSE,
@@ -80,20 +80,20 @@ caf_create <- function(
   # TODO-20180205-1:
   # At least encapsulate it in own function
 
-  .formals <- formals(cafun)
+  .formals <- formals(caf)
   if (!is.null(fun)) .formals$fun <- fun
   .formals$.refresh <- .refresh_default
   .formals$.verbose <- .verbose_default
-  formals(cafun) <- .formals
+  formals(caf) <- .formals
 
-  cafun
+  caf
 }
 
 # Reset cache -------------------------------------------------------------
 
 #' Reset internal cache of cache-aware function
-#' @example inst/examples/ex-cafun_main.R
+#' @example inst/examples/ex-caf_main.R
 #' @export
-caf_reset <- function(cafun, .verbose = FALSE) {
-  cafun(.reset = TRUE, .verbose = .verbose)
+caf_reset <- function(caf, .verbose = FALSE) {
+  caf(.reset = TRUE, .verbose = .verbose)
 }

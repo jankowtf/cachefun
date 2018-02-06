@@ -48,3 +48,10 @@
 * Minor changes:
     * Updated example: inst/examples/ex-cafun_main.R
     * Updated README
+    
+# cachefun 0.1.6
+
+* Major changes:
+    * Changed argument: `cafun` to `caf` in `caf_reset`
+* Minar changes:
+    * Changed all occurences of `cafun` to `caf` to make things more concise and consistent

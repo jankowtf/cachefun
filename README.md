@@ -29,9 +29,9 @@ library(cachefun)
 fun <- function() Sys.time()
 
 # Turn this function into a cache-aware function
-cafun <- caf_create(fun = fun)
+caf <- caf_create(fun = fun)
 
-str(cafun)
+str(caf)
 #> function (fun = function () 
 #> Sys.time(), .refresh = TRUE, .reset = FALSE, .verbose = FALSE, ...)
 # Note that default value for arg '.refresh = TRUE' >> by default, the inner
@@ -40,22 +40,22 @@ str(cafun)
 # tell it to return the internal cache in a particular call by setting '.refresh
 # = FALSE'.
 
-cafun() # Inner function executed, result is cached
+caf() # Inner function executed, result is cached
 #> [1] "2018-02-05 09:11:08 CET"
 Sys.sleep(1)
-cafun() # Inner function executed, result is cached
+caf() # Inner function executed, result is cached
 #> [1] "2018-02-05 09:11:09 CET"
 Sys.sleep(1)
-cafun(.refresh = FALSE) # Inner function NOT executed, internal cache returned
+caf(.refresh = FALSE) # Inner function NOT executed, internal cache returned
 #> [1] "2018-02-05 09:11:09 CET"
 Sys.sleep(1)
-cafun(.refresh = FALSE) # Inner function NOT executed, internal cache returned
+caf(.refresh = FALSE) # Inner function NOT executed, internal cache returned
 #> [1] "2018-02-05 09:11:09 CET"
 Sys.sleep(1)
-cafun() # Inner function executed, result is cached
+caf() # Inner function executed, result is cached
 #> [1] "2018-02-05 09:11:12 CET"
 Sys.sleep(1)
-cafun(.refresh = FALSE) # Inner function NOT executed, internal cache returned
+caf(.refresh = FALSE) # Inner function NOT executed, internal cache returned
 #> [1] "2018-02-05 09:11:12 CET"
 ```
 
@@ -64,9 +64,9 @@ cafun(.refresh = FALSE) # Inner function NOT executed, internal cache returned
 ``` r
 library(cachefun)
 fun <- function() Sys.time()
-cafun <- caf_create(fun = fun, .refresh_default = FALSE)
+caf <- caf_create(fun = fun, .refresh_default = FALSE)
 
-str(cafun)
+str(caf)
 #> function (fun = function () 
 #> Sys.time(), .refresh = FALSE, .reset = FALSE, .verbose = FALSE, ...)
 # Note that default value for arg '.refresh = FALSE' >> you reversed the
@@ -74,15 +74,15 @@ str(cafun)
 # return the internal cache value unless you explicitly tell it not to by
 # setting `.refresh = TRUE` in a particular call
 
-cafun() # Inner function is INITIALLY executed (as cache is still empty),
+caf() # Inner function is INITIALLY executed (as cache is still empty),
 #> [1] "2018-02-05 09:11:43 CET"
         # result is cached
-cafun() # Inner function NOT executed, internal cache returned
+caf() # Inner function NOT executed, internal cache returned
 #> [1] "2018-02-05 09:11:43 CET"
-cafun(.refresh = TRUE) # Explicit refresh request:
+caf(.refresh = TRUE) # Explicit refresh request:
 #> [1] "2018-02-05 09:11:43 CET"
                       # Inner function executed, result is cached
-cafun() # Inner function NOT executed, internal cache returned
+caf() # Inner function NOT executed, internal cache returned
 #> [1] "2018-02-05 09:11:43 CET"
 ```
 
@@ -92,13 +92,13 @@ cafun() # Inner function NOT executed, internal cache returned
 library(cachefun)
 fun <- function(x) Sys.time() + x
 
-cafun <- caf_create(fun = fun)
+caf <- caf_create(fun = fun)
 
-cafun(x = 3600) # Inner function executed, result is cached
+caf(x = 3600) # Inner function executed, result is cached
 #> [1] "2018-02-05 10:13:44 CET"
-cafun(x = 3600 * 5, .refresh = FALSE) # Inner function NOT executed, internal cache returned
+caf(x = 3600 * 5, .refresh = FALSE) # Inner function NOT executed, internal cache returned
 #> [1] "2018-02-05 10:13:44 CET"
-cafun(x = 3600 * 5) # Inner function executed, result is cached
+caf(x = 3600 * 5) # Inner function executed, result is cached
 #> [1] "2018-02-05 14:13:44 CET"
 ```
 
@@ -108,13 +108,13 @@ cafun(x = 3600 * 5) # Inner function executed, result is cached
 library(cachefun)
 fun <- function(x) rnorm(x)
 
-cafun <- caf_create(fun = fun)
+caf <- caf_create(fun = fun)
 
-res <- cafun(x = 1000)
+res <- caf(x = 1000)
 
 # Resetting the internal cache in verbose mode (messages for prior and new
 # object size in cache)
-caf_reset(cafun = cafun, .verbose = TRUE)
+caf_reset(caf = caf, .verbose = TRUE)
 #> 8040
 #> 0
 ```
