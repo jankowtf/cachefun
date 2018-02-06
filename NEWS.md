@@ -48,7 +48,7 @@
 * Minor changes:
     * Updated example: inst/examples/ex-cafun_main.R
     * Updated README
-    
+
 # cachefun 0.1.6
 
 * Major changes:
