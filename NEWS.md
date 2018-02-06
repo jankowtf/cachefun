@@ -55,3 +55,13 @@
     * Changed argument: `cafun` to `caf` in `caf_reset`
 * Minar changes:
     * Changed all occurences of `cafun` to `caf` to make things more concise and consistent
+
+# cachefun 0.1.7
+
+* Major changes:
+    * Reactive dependencies (i.e. other *caf*s) can now simply be defined as formal arguments of the inner function. Backend code for handling reactive dependencies has also been consolidated in `caf_create`
+    * Three dot argument has been moved up both for `caf_create` and the *caf* created by `caf_create` in order to allow the correct handling of unnamed argument specification when calling the resulting *caf*. This should also make everything play nicely with the tidyverse approach.
+* Minor changes:
+    * Dropped verbose argument(s) (`.verbose` and `.verbose_default`) as I think one can do without them and they just cost compute time.
+    * Modified tests in `test-caf_main.R` to reflect changes.
+    * Modified examples in `ex-caf_main.R` to reflect changes.

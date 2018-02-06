@@ -1,10 +1,13 @@
 Package: cachefun
 Type: Package
 Title: Functions with built-in cache
-Version: 0.1.6
+Version: 0.1.7
 Author: Janko Thyson
 Maintainer: Janko Thyson <janko.thyson@rappster.io>
-Description: Allows to define functions that are able to cache their return value
+Description: Allows to define functions that are able to internally cache 
+    their return value. Caching can be flexibily turned on and off. 
+    Reactive dependencies can be defined by means that directly leverages the 
+    reactive functionality of shiny.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

@@ -32,8 +32,8 @@ fun <- function() Sys.time()
 caf <- caf_create(fun = fun)
 
 str(caf)
-#> function (fun = function () 
-#> Sys.time(), .refresh = TRUE, .reset = FALSE, .verbose = FALSE, ...)
+#> function (..., .fun = function () 
+#> Sys.time(), .refresh = TRUE, .reset = FALSE)
 # Note that default value for arg '.refresh = TRUE' >> by default, the inner
 # function is always executed (internal cache is always updated). This implies
 # that the function behaves like any regular R function unless you explicitly
@@ -41,22 +41,22 @@ str(caf)
 # = FALSE'.
 
 caf() # Inner function executed, result is cached
-#> [1] "2018-02-05 09:11:08 CET"
+#> [1] "2018-02-06 11:05:07 CET"
 Sys.sleep(1)
 caf() # Inner function executed, result is cached
-#> [1] "2018-02-05 09:11:09 CET"
+#> [1] "2018-02-06 11:05:08 CET"
 Sys.sleep(1)
 caf(.refresh = FALSE) # Inner function NOT executed, internal cache returned
-#> [1] "2018-02-05 09:11:09 CET"
+#> [1] "2018-02-06 11:05:08 CET"
 Sys.sleep(1)
 caf(.refresh = FALSE) # Inner function NOT executed, internal cache returned
-#> [1] "2018-02-05 09:11:09 CET"
+#> [1] "2018-02-06 11:05:08 CET"
 Sys.sleep(1)
 caf() # Inner function executed, result is cached
-#> [1] "2018-02-05 09:11:12 CET"
+#> [1] "2018-02-06 11:05:11 CET"
 Sys.sleep(1)
 caf(.refresh = FALSE) # Inner function NOT executed, internal cache returned
-#> [1] "2018-02-05 09:11:12 CET"
+#> [1] "2018-02-06 11:05:11 CET"
 ```
 
 ### Change the default value of args 
@@ -67,23 +67,23 @@ fun <- function() Sys.time()
 caf <- caf_create(fun = fun, .refresh_default = FALSE)
 
 str(caf)
-#> function (fun = function () 
-#> Sys.time(), .refresh = FALSE, .reset = FALSE, .verbose = FALSE, ...)
+#> function (..., .fun = function () 
+#> Sys.time(), .refresh = FALSE, .reset = FALSE)
 # Note that default value for arg '.refresh = FALSE' >> you reversed the
 # pre-configured default settings. This implies that the function will always
 # return the internal cache value unless you explicitly tell it not to by
 # setting `.refresh = TRUE` in a particular call
 
 caf() # Inner function is INITIALLY executed (as cache is still empty),
-#> [1] "2018-02-05 09:11:43 CET"
+#> [1] "2018-02-06 11:05:45 CET"
         # result is cached
 caf() # Inner function NOT executed, internal cache returned
-#> [1] "2018-02-05 09:11:43 CET"
+#> [1] "2018-02-06 11:05:45 CET"
 caf(.refresh = TRUE) # Explicit refresh request:
-#> [1] "2018-02-05 09:11:43 CET"
+#> [1] "2018-02-06 11:05:45 CET"
                       # Inner function executed, result is cached
 caf() # Inner function NOT executed, internal cache returned
-#> [1] "2018-02-05 09:11:43 CET"
+#> [1] "2018-02-06 11:05:45 CET"
 ```
 
 ### Inner function with argumeents 
@@ -112,11 +112,7 @@ caf <- caf_create(fun = fun)
 
 res <- caf(x = 1000)
 
-# Resetting the internal cache in verbose mode (messages for prior and new
-# object size in cache)
-caf_reset(caf = caf, .verbose = TRUE)
-#> 8040
-#> 0
+caf_reset(caf = caf)
 ```
 
 ### Reactive dependencies
@@ -129,16 +125,18 @@ fun_1 <- function(x) x
 caf_1 <- caf_create(fun = fun_1)
 
 # Define 'caf_2' that depends on 'caf_1'
-fun_2 <- function(x, observes) {
-  observes$caf_1(.refresh = FALSE) + x
+fun_2 <- function(x, caf_1) {
+  caf_1(.refresh = FALSE) + x
 }
-caf_2 <- caf_create(fun = fun_2, observes = list(caf_1 = caf_1))
+caf_2 <- caf_create(fun = fun_2, caf_1 = caf_1)
 # Note that we state the dependency by relying on the internal cache of 'caf_1'
 # ('.refresh = FALSE'). Behind the scenes, 'caf_create' takes care of turning a
-# dependency listed in the 'observes' ilist nto an **reactive** one (leveraging
-# shiny's capabilities). This means that 'caf_2' will be re-evaluated whenever
-# the cached return value of dependency 'caf_1' is updated. In shiny terms, the
-# cache of 'caf_2' is autmatically invalidated when it needs to be
+# dependencies that are defined as args of the inner function into an
+# **reactive** ones (directly leveraging shiny's reactive capabilities). This
+# means that 'caf_2' will be re-evaluated whenever the cached return value of
+# dependency 'caf_1' is updated. In shiny terms, the cache of 'caf_2' is
+# autmatically invalidated when it needs to be and you never run the risk of
+# being "out-of-sync" with dependencies
 
 caf_1(x = 10)
 #> [1] 10
@@ -160,5 +158,3 @@ caf_2(x = 50, .refresh = FALSE)
 caf_2(x = 200)
 #> [1] 300
 ```
-
-

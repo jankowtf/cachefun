@@ -8,63 +8,44 @@
 #' @export
 caf_create <- function(
   fun = NULL,
+  ...,
   observes = list(),
-  .refresh_default = TRUE,
-  .verbose_default = FALSE
+  .refresh_default = TRUE
+  # .verbose_default = FALSE
 ) {
   reactv <- shiny::reactiveValues()
 
   dat_reactive <- shiny::reactive({
-    if(reactv$.verbose) message('Caching result...')
+    # if(reactv$.verbose) message('Caching result...')
     reactv$data
   })
 
   caf <- function(
-    fun,
+    ...,
+    .fun,
     .refresh = TRUE,
-    .reset = FALSE,
-    .verbose = FALSE,
-    ...
+    .reset = FALSE
+    # .verbose = FALSE,
   ) {
     # Reset -----
     if (.reset) {
-      if (.verbose) message(object.size(dat_reactive()))
+      # if (.verbose) message(object.size(dat_reactive()))
       reactv$data <<- NULL
-      if (.verbose) message(object.size(dat_reactive()))
+      # if (.verbose) message(object.size(dat_reactive()))
       return(invisible(NULL))
     }
 
     # Transfer settings -----
-    reactv$.verbose <<- .verbose
-
-    # if (shiny::isolate(is.null(reactv$data)) | refresh) {
-
-    # NOTE:
-    # Isolate not needed anymore if 'options(shiny.suppressMissingContextError = TRUE)'
-    # which is handled via the package's '.onLoad' function.
-    # Keep as reference, though.
+    # reactv$.verbose <<- .verbose
 
     if (is.null(reactv$data) | .refresh) {
-      # browser()
-      # fun_res <- fun(..., observes = observes)
-      fun_formals <- formals(fun)
-      fun_res <- if (!"observes" %in% names(fun_formals)) {
-        fun(...)
-      } else {
-        # fun(..., observes = observes)
-        reactive(fun(..., observes = observes))
-        # TODO-20180206-1: Don't really know if implicit or explicit is better
-        # regarding the use of 'reactive'. Pro for explicitly using it already
-        # in the dev of the inner function is clarity Pro for implicitly taking
-        # care of wrapping the inner function is hiding "reactive overhead"
-        # stuff from the user when defining the inner function
-      }
-      # fun_res <- rlang::eval_tidy(fun())
-      # Keep as ref, probably will need to be done this way at some point ;-)
-      reactv$data <<- fun_res
+      reactv$data <<- reactive(.fun(...))
+      # Note:
+      # Wrapping with 'reactive' ensures that reactive relationships to
+      # dependencies are picked up.
     }
 
-    # Relay cache-handling to shiny -----
+    # Dispatch cache-handling to shiny -----
     if (!shiny::is.reactive(dat_reactive())) {
       dat_reactive()
     } else {
@@ -72,7 +53,15 @@ caf_create <- function(
     }
   }
 
-  # Transfer default values -----
+  # Embedd dependencies as default args of 'fun' -----
+  dot_list <- list(...)
+  .formals_fun <- formals(fun)
+  for (arg in names(dot_list)) {
+    .formals_fun[[arg]] <- dot_list[[arg]]
+  }
+  formals(fun) <- .formals_fun
+
+  # Embedd default values of meta args as args of 'caf'
 
   # TODO-20180204-1:
   # This seems too inolved >> find better solution
@@ -81,9 +70,9 @@ caf_create <- function(
   # At least encapsulate it in own function
 
   .formals <- formals(caf)
-  if (!is.null(fun)) .formals$fun <- fun
+  if (!is.null(fun)) .formals$.fun <- fun
   .formals$.refresh <- .refresh_default
-  .formals$.verbose <- .verbose_default
+  # .formals$.verbose <- .verbose_default
   formals(caf) <- .formals
 
   caf
