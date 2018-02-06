@@ -4,14 +4,11 @@
 \alias{caf_create}
 \title{Create cache-aware function}
 \usage{
-caf_create(fun = NULL, observes = list(), .refresh_default = TRUE,
-  .verbose_default = FALSE)
+caf_create(fun = NULL, ..., observes = list(), .refresh_default = TRUE)
 }
 \description{
 Create cache-aware function
 }
-<<<<<<< HEAD
-=======
 \examples{
 
 # Introduction ------------------------------------------------------------
@@ -81,9 +78,7 @@ caf <- caf_create(fun = fun)
 
 res <- caf(x = 1000)
 
-# Resetting the internal cache in verbose mode (messages for prior and new
-# object size in cache)
-caf_reset(caf = caf, .verbose = TRUE)
+caf_reset(caf = caf)
 
 # Reactive dependencies ---------------------------------------------------
 
@@ -94,16 +89,18 @@ fun_1 <- function(x) x
 caf_1 <- caf_create(fun = fun_1)
 
 # Define 'caf_2' that depends on 'caf_1'
-fun_2 <- function(x, observes) {
-  observes$caf_1(.refresh = FALSE) + x
+fun_2 <- function(x, caf_1) {
+  caf_1(.refresh = FALSE) + x
 }
-caf_2 <- caf_create(fun = fun_2, observes = list(caf_1 = caf_1))
+caf_2 <- caf_create(fun = fun_2, caf_1 = caf_1)
 # Note that we state the dependency by relying on the internal cache of 'caf_1'
 # ('.refresh = FALSE'). Behind the scenes, 'caf_create' takes care of turning a
-# dependency listed in the 'observes' ilist nto an **reactive** one (leveraging
-# shiny's capabilities). This means that 'caf_2' will be re-evaluated whenever
-# the cached return value of dependency 'caf_1' is updated. In shiny terms, the
-# cache of 'caf_2' is autmatically invalidated when it needs to be
+# dependencies that are defined as args of the inner function into an
+# **reactive** ones (directly leveraging shiny's reactive capabilities). This
+# means that 'caf_2' will be re-evaluated whenever the cached return value of
+# dependency 'caf_1' is updated. In shiny terms, the cache of 'caf_2' is
+# autmatically invalidated when it needs to be and you never run the risk of
+# being "out-of-sync" with dependencies
 
 caf_1(x = 10)
 caf_2(x = 50)
@@ -111,13 +108,12 @@ caf_2(x = 50)
 caf_1(x = 100)
 caf_2(x = 50, .refresh = FALSE)
 # Note that even though we explicitly requested that 'caf_2' should return the
-# interanally cached value of the previous execution (60), the inner unction was
-# instead evaluated. This is because the cached value of 'caf_1' has changed
-# which automatically invalidates all reactive components that depend on it.
-# This way you can be sure that even though you might like to use cached values,
-# you still never run the risk of being out-of-sync regarding your function's
-# dependencies
+# internally cached value of the previous execution (60), the inner function was
+# instead re-evaluated. This is because the cached value of 'caf_1' has changed
+# which automatically invalidates all reactive components that depend on it
+# (i.e. the cache value of 'caf_2'). This way you can be sure that even though
+# you might like to use cached values, you still never run the risk of being
+# out-of-sync regarding your function's dependencies
 
 caf_2(x = 200)
 }
->>>>>>> develop
